@@ -27,7 +27,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Welcome to the Wayfarer API" });
+  res.send("Welcome to the Wayfarer API! Please use the /api endpoints for accessing resources.");
 });
 // 404 handler
 app.use((req: Request, res: Response) => {
