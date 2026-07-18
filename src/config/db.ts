@@ -10,5 +10,5 @@ export const projectCollection = db.collection("projects");
 
 // Call this only when your application terminates
 export async function disconnectFromMongoDB() {
-  await client.close();
+  // await client.close();
 }
