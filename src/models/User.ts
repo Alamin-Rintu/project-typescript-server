@@ -28,6 +28,7 @@ export const findUserByEmail = async (email: string) => {
 };
 
 export const findUserById = async (id: string) => {
+  if (!ObjectId.isValid(id)) return null;
   return usersCollection.findOne({ _id: new ObjectId(id) as any });
 };
 

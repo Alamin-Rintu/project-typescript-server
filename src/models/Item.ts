@@ -44,10 +44,12 @@ export const createItem = async (item: Omit<Item, "_id" | "createdAt" | "updated
 };
 
 export const findItemById = async (id: string) => {
+  if (!ObjectId.isValid(id)) return null;
   return itemsCollection.findOne({ _id: new ObjectId(id) as any });
 };
 
 export const deleteItemById = async (id: string) => {
+  if (!ObjectId.isValid(id)) return null;
   return itemsCollection.deleteOne({ _id: new ObjectId(id) as any });
 };
 
@@ -124,6 +126,7 @@ export const getUserItems = async (userId: string) => {
 };
 
 export const incrementViews = async (id: string) => {
+  if (!ObjectId.isValid(id)) return null;
   return itemsCollection.updateOne(
     { _id: new ObjectId(id) as any },
     { $inc: { views: 1 } }
@@ -136,7 +139,7 @@ export const getCategories = async () => {
 
 export const getItemsByCategory = async (category: string, excludeId?: string, limit = 4) => {
   const filter: Record<string, any> = { category };
-  if (excludeId) {
+  if (excludeId && ObjectId.isValid(excludeId)) {
     filter._id = { $ne: new ObjectId(excludeId) as any };
   }
   return itemsCollection.find(filter).limit(limit).toArray();

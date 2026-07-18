@@ -78,3 +78,15 @@ export const getBookingStats = async (userId?: string) => {
     totalRevenue: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
   };
 };
+
+export const updateBookingStatus = async (
+  id: string,
+  status: "confirmed" | "pending" | "cancelled"
+) => {
+  if (!ObjectId.isValid(id)) return null;
+  return bookingsCollection.updateOne(
+    { _id: new ObjectId(id) as any },
+    { $set: { status, updatedAt: new Date() } }
+  );
+};
+

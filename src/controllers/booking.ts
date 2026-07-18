@@ -3,8 +3,11 @@ import {
   createBooking,
   getUserBookings,
   getBookingStats,
+  updateBookingStatus,
+  bookingsCollection,
 } from "../models/Booking";
 import { AuthRequest } from "../middleware/auth";
+import { ObjectId } from "mongodb";
 
 export const bookItem = async (req: AuthRequest, res: Response) => {
   try {
@@ -80,3 +83,45 @@ export const getBookingStatsEndpoint = async (req: AuthRequest, res: Response) =
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const updateBookingStatusController = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!id || !status) {
+      return res.status(400).json({ message: "Booking ID and status are required" });
+    }
+
+    if (!["confirmed", "pending", "cancelled"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    if (!ObjectId.isValid(id as string)) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    const booking = await bookingsCollection.findOne({ _id: new ObjectId(id as string) as any });
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Regular users can only cancel their own bookings
+    if (req.user!.role !== "admin" && booking.userId !== req.user!.userId) {
+      return res.status(403).json({ message: "Forbidden: You cannot modify this booking" });
+    }
+
+    // Regular users can only transition to "cancelled"
+    if (req.user!.role !== "admin" && status !== "cancelled") {
+      return res.status(403).json({ message: "Forbidden: You can only cancel bookings" });
+    }
+
+    await updateBookingStatus(id as string, status);
+
+    res.json({ message: `Booking status updated to ${status} successfully` });
+  } catch (error) {
+    console.error("Update booking status error:", error);
+    res.status(500).json({ message: "Server error updating booking status" });
+  }
+};
+
